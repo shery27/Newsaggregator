@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body onload="loadSources()">
+    <div>
+        <h2>News Aggregator</h2>
+    </div>
+    <form>
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <select class="custom-select my-1 mr-sm-2" id="form-select" onchange="onSourceSelect(event)">
+                    <option selected>Choose Source</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary mb-2" onclick="loadArticles()">Load Articles</button>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-sm-1"> </div>
+        <div class="col-sm-10">
+            <table class="table table-striped table-bordered" id="myTable">
+                <tbody id="table-body">
+                    <tr>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <script>
+        let selectedSource = '';
+        let articles = []
+        let length = 0;
+        function loadSources() {
+            let sourcesTemp;
+            let url = 'http://127.0.0.1:5000/sources';
+            fetch(url)
+                .then(response => response.json())
+                .then(sources => {
+                    sourcesTemp = sources
+                    console.log(sourcesTemp);
+                    var dynamicSelect = document.getElementById("form-select");
+                    sourcesTemp.results.forEach(function (item) {
+                        var newOption = document.createElement("option");
+                        newOption.text = item.sourcename.toString();
+                        newOption.value = item.sourcename.toString();
+                        dynamicSelect.add(newOption);
+                    });
+                    
+                })
+                .catch(() => console.log("Can’t access " + url + "  Blocked by browser?"))
+        }
+        function loadArticles() {
+
+            
+            let url = 'http://127.0.0.1:5000/articles?source=' + selectedSource;
+            fetch(url)
+                .then(response => response.json())
+                .then(articles => {
+                    console.log(articles, '------')
+                    let tempLength = length;
+                    length = articles.results.length;
+                    document.getElementById("myTable").innerHTML = '';
+                    var table = document.getElementById("myTable")
+                    var row = table.insertRow(0);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    var cell5 = row.insertCell(4);
+                    cell1.innerHTML = "<b>News Heading</b>";
+                    cell2.innerHTML = "<b>News Source</b>";
+                    cell3.innerHTML = "<b>Author</b>";
+                    cell4.innerHTML = "<b>Date</b>";
+                    cell5.innerHTML = "<b>Sentiment Type</b>";
+
+                    for (let j = 0; j < articles.results.length; j++) {
+                        var row = table.insertRow(1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        var cell5 = row.insertCell(4);
+                        if (articles.results[j].heading == '') {
+                            cell1.style.backgroundColor = "red"
+                            cell1.style.color = "#fff"
+                            cell1.innerHTML = 'Heading not found'
+                        }
+                        else {
+                            cell1.innerHTML = articles.results[j].heading;
+                        }
+                        if (articles.results[j].source == '') {
+                            cell2.style.backgroundColor = "red"
+                            cell2.style.color = "#fff"
+                            cell2.innerHTML = 'Source not found'
+                        }
+                        else {
+                            cell2.innerHTML = articles.results[j].source;
+                        }
+                        if (articles.results[j].author == '') {
+                            cell3.style.backgroundColor = "red"
+                            cell3.style.color = "#fff"
+                            cell3.innerHTML = 'Author not found'
+                        }
+                        else {
+                            cell3.innerHTML = articles.results[j].author;
+                        }
+                        if (articles.results[j].author == '') {
+                            cell3.style.backgroundColor = "red"
+                            cell3.style.color = "#fff"
+                            cell3.innerHTML = 'Author not found'
+                        }
+                        else {
+                            cell3.innerHTML = articles.results[j].author;
+                        }
+                        if (articles.results[j]['news-date'] == '') {
+                            cell4.style.backgroundColor = "red"
+                            cell4.style.color = "#fff"
+                            cell4.innerHTML = 'Date not found'
+                        }
+                        else {
+                            var date = new Date(articles.results[j]['news-date'].$date);
+                            cell4.innerHTML = date;
+                        }
+                        if (articles.results[j]['sentiment-type'] == '') {
+                            cell5.style.backgroundColor = "red"
+                            cell5.style.color = "#fff"
+                            cell5.innerHTML = 'Sentiment Type not found'
+                        }
+                        else {
+                            var date = new Date(articles.results[j]['sentiment-type']);
+                            cell5.innerHTML = date;
+                        }
+                    }
+
+                })
+                .catch((e) => {
+                    console.log(e)
+                    console.log("Can’t access " + url + "  Blocked by browser?")
+                })
+
+        }
+        function onSourceSelect(source) {
+            selectedSource = source.target.value;
+        }
+    </script>
+
+</body>
+
+</html>
